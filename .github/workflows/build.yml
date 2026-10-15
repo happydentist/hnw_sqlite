@@ -19,7 +19,7 @@ jobs:
     - name: Download SQLite Source (Amalgamation)
       run: |
         # 1. 確保使用完整的 www. 網址下載最新穩定的 3.54.0 版本
-        wget https://www.sqlite.org -O sqlite.zip
+        wget https://www.sqlite.org -O sqlite-src-3540000.zip
         
         # 2. 解壓縮並重新命名目錄
         unzip sqlite.zip
