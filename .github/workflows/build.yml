@@ -20,22 +20,12 @@ jobs:
       run: |
         # 1. 確保使用完整的 www. 網址下載最新穩定的 3.54.0 版本
         wget https://www.sqlite.org -O sqlite.zip
-        
-        # 2. 安全檢查：如果下載失敗（例如檔案不存在或不是 ZIP），則啟動動態修正抓取
-        if ! unzip -t sqlite.zip >/dev/null 2>&1; then
-          echo "Fixed URL failed, falling back to dynamic scraping..."
-          
-          # 使用 curl 抓取官方下載頁面，並透過動態變數取得精準檔名
-          # 在 GitHub Actions 中，Shell 變數前加上反斜線 \$ 可避免與 GitHub 語法衝突
-          export DYNAMIC_VERSION=$(curl -s https://sqlite.org | grep -o 'sqlite-amalgamation-[0-9]\+.zip' | head -n 1)
-          
-          echo "Found latest version filename: \$DYNAMIC_VERSION"
           
           # 嘗試下載
           wget "https://www.sqlite.org\$DYNAMIC_VERSION" -O sqlite.zip
         fi
         
-        # 3. 解壓縮並重新命名目錄
+        # 2. 解壓縮並重新命名目錄
         unzip sqlite.zip
         mv sqlite-amalgamation-* sqlite-src
 
