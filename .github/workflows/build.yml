@@ -19,7 +19,7 @@ jobs:
     - name: Download SQLite Source (Amalgamation)
       run: |
         # 1. 確保使用完整的 www. 網址下載最新穩定的 3.54.0 版本
-        wget https://sqlite.org -O sqlite.zip
+        wget https://www.sqlite.org -O sqlite.zip
         
         # 2. 安全檢查：如果下載失敗（例如檔案不存在或不是 ZIP），則啟動動態修正抓取
         if ! unzip -t sqlite.zip >/dev/null 2>&1; then
@@ -32,7 +32,7 @@ jobs:
           echo "Found latest version filename: \$DYNAMIC_VERSION"
           
           # 嘗試下載
-          wget "https://sqlite.org\$DYNAMIC_VERSION" -O sqlite.zip
+          wget "https://www.sqlite.org\$DYNAMIC_VERSION" -O sqlite.zip
         fi
         
         # 3. 解壓縮並重新命名目錄
