@@ -29,9 +29,15 @@ jobs:
     - name: Compile SQLite for Windows (64-bit)
       run: |
         cd sqlite-src
+
+        # 將內部動態設定提示字元的巨集直接強制定義為 0，不受 readline 影響
+        sed -i 's/#define SQLITE_ENABLE_LINEEDIT_PROMPT 1/#define SQLITE_ENABLE_LINEEDIT_PROMPT 0/g' shell.c
+    
+        # 或是更保險的做法：直接把帶有 :memory: 的字串強制換成傳統的 "sqlite> "
+        sed -i 's/sqlite (:memory:)> /sqlite> /g' shell.c 2>/dev/null || true        
         
         # 共同的編譯旗標：啟用百分位數(PERCENTILE)、全文檢索(FTS5)與幾何物件(RTREE)
-        CFLAGS="-O2 -UHAVE_READLINE -UHAVE_EDITLINE -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_FTS5"
+        CFLAGS="-O2 -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_FTS5"
         
         # 1. 編譯成 Windows 命令行執行檔 (sqlite3.exe)
         x86_64-w64-mingw32-gcc $CFLAGS shell.c sqlite3.c -o sqlite3.exe -static
