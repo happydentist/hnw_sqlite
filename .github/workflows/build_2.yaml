@@ -30,11 +30,14 @@ jobs:
       run: |
         cd sqlite-src
 
-        # 將內部動態設定提示字元的巨集直接強制定義為 0，不受 readline 影響
-        sed -i 's/#define SQLITE_ENABLE_LINEEDIT_PROMPT 1/#define SQLITE_ENABLE_LINEEDIT_PROMPT 0/g' shell.c
+        # 暴力解法 1：找到新版提示字元生成的函數入口或變數，強制覆蓋為固定字串
+        # 我們直接在 shell.c 中搜尋處理 prompt 的邏輯，並直接將其指向 "sqlite> "
+        sed -i 's/p->zPrompt = .*/p->zPrompt = "sqlite> ";/g' shell.c 2>/dev/null || true
+        sed -i 's/p->zContinue = .*/p->zContinue = "   ...> ";/g' shell.c 2>/dev/null || true
     
-        # 或是更保險的做法：直接把帶有 :memory: 的字串強制換成傳統的 "sqlite> "
-        sed -i 's/sqlite (:memory:)> /sqlite> /g' shell.c 2>/dev/null || true        
+        # 暴力解法 2：如果新版程式碼是動態指派，直接將所有包含記憶體或版本號的預設格式化字串全部換掉
+        sed -i 's/"SQLite-%s %s-> "/"sqlite> "/g' shell.c 2>/dev/null || true
+        sed -i 's/"sqlite (:memory:)> "/"sqlite> "/g' shell.c 2>/dev/null || true
         
         # 共同的編譯旗標：啟用百分位數(PERCENTILE)、全文檢索(FTS5)與幾何物件(RTREE)
         CFLAGS="-O2 -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_FTS5"
