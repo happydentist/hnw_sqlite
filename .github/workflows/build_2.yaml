@@ -1,0 +1,48 @@
+name: Compile SQLite 2 Edition for Windows
+
+on:
+  workflow_dispatch: # 允許在網頁上手動觸發
+
+jobs:
+  build-windows:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install MinGW Cross-Compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mingw-w64 wget unzip
+
+    - name: Download SQLite Source (Amalgamation)
+      run: |
+        # 自動爬取官網 download 頁面當前的 zip 檔名與年份進行下載
+        SQLITE_VERSION=$(curl -s https://www.sqlite.org/download.html | grep -o 'sqlite-amalgamation-[0-9]\+.zip' | head -n 1)
+        CURRENT_YEAR=$(date +"%Y")
+        wget "https://www.sqlite.org/{CURRENT_YEAR}/${SQLITE_VERSION}" -O sqlite.zip
+        
+        unzip sqlite.zip
+        mv sqlite-amalgamation-* sqlite-src
+
+    - name: Compile SQLite for Windows (64-bit)
+      run: |
+        cd sqlite-src
+        
+        # 共同的編譯旗標：啟用百分位數(PERCENTILE)、全文檢索(FTS5)與幾何物件(RTREE)
+        CFLAGS="-O2 -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_FTS5"
+        
+        # 1. 編譯成 Windows 命令行執行檔 (sqlite3.exe)
+        x86_64-w64-mingw32-gcc $CFLAGS shell.c sqlite3.c -o sqlite3.exe -static
+        
+        # 2. 編譯成 Windows 動態連結庫 (sqlite3.dll) 供第三方語言或軟體呼叫
+        x86_64-w64-mingw32-gcc $CFLAGS -shared sqlite3.c -o sqlite3.dll -Wl,--out-implib,libsqlite3.a
+
+    - name: Upload Windows Binaries Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sqlite3-windows-x64
+        path: |
+          sqlite-src/sqlite3.exe
+          sqlite-src/sqlite3.dll
