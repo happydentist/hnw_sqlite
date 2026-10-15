@@ -21,7 +21,7 @@ jobs:
         # 自動爬取官網 download 頁面當前的 zip 檔名與年份進行下載
         SQLITE_VERSION=$(curl -s https://www.sqlite.org/download.html | grep -o 'sqlite-amalgamation-[0-9]\+.zip' | head -n 1)
         CURRENT_YEAR=$(date +"%Y")
-        wget "https://www.sqlite.org/{CURRENT_YEAR}/${SQLITE_VERSION}" -O sqlite.zip
+        wget "https://www.sqlite.org/${CURRENT_YEAR}/${SQLITE_VERSION}" -O sqlite.zip
         
         unzip sqlite.zip
         mv sqlite-amalgamation-* sqlite-src
