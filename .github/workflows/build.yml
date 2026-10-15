@@ -18,9 +18,19 @@ jobs:
 
     - name: Download SQLite Source (Amalgamation)
       run: |
-        # 下載 2026 最新版或穩定版的 SQLite 原始碼
-        wget https://sqlite.org -O sqlite.zip || \
+        # 方法一（推薦）：直接指定 2026 年最新穩定的 3.54.0 官方原始碼網址
         wget https://sqlite.org -O sqlite.zip
+        
+        # 檢查下載下來的是否為真實 zip，若失敗則使用自動化動態抓取備援
+        if ! unzip -t sqlite.zip >/dev/null 2>&1; then
+          echo "Specified URL failed, fetching dynamic link..."
+          # 自動爬取官網 download 頁面當前的 zip 檔名與年份進行下載
+          SQLITE_VERSION=$(curl -s https://www.sqlite.org/download.html | grep -o 'sqlite-amalgamation-[0-9]\+.zip' | head -n 1)
+          CURRENT_YEAR=$(date +"%Y")
+          wget "https://sqlite.org{CURRENT_YEAR}/${SQLITE_VERSION}" -O sqlite.zip || \
+          wget "https://sqlite.org{SQLITE_VERSION}" -O sqlite.zip
+        fi
+        
         unzip sqlite.zip
         mv sqlite-amalgamation-* sqlite-src
 
